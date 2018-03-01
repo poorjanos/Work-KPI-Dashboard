@@ -54,7 +54,6 @@ jdbcDriver <-
   JDBC(driverClass = "oracle.jdbc.OracleDriver",
        classPath = "C:\\Users\\PoorJ\\Desktop\\ojdbc7.jar")
 
-
 jdbcConnection <-
   dbConnect(
     jdbcDriver,
@@ -63,277 +62,101 @@ jdbcConnection <-
     password = ablak$pwd
   )
 
-
-
+# Read in SQL script from file
 portf <-
   readQuery(here::here("SQL", "kpi_portf.sql"))
 
-# Query on the Oracle instance name.
-t_al_curr <- dbGetQuery(jdbcConnection, portf) 
+# Query on the Oracle instance name
+t_al_curr <- dbGetQuery(jdbcConnection, portf)
 
 # Close connection
 dbDisconnect(jdbcConnection)
 
 
-# if (nrow(t_al_curr) > 100 && as.Date(max(floor_date(ymd_hms(t_al_curr$SZERZDAT), "day"))) == Sys.Date()-1){ 
-  
-  # Initialize curr as hist if folder empty
-  if (!file.exists(here::here("Data", "kpi_prop_log.csv")) &
-      nrow(t_al_curr) > 100) {
-    t_al_hist <- t_al_curr
-    write.csv(t_al_hist, here::here("Data", "kpi_prop_log.csv"), row.names = FALSE)
-    # Check further if folder not empty
-  } else {
-    t_al_hist <-
-      read.csv(here::here("Data", "kpi_prop_log.csv"), stringsAsFactors = FALSE)
-    max_hist_date <-
-      max(floor_date(ymd_hms(t_al_hist$SZERZDAT), "day"))
-    max_curr_date <- max(floor_date(ymd_hms(t_al_curr$SZERZDAT), "day"))
-    # Re-init curr as hist if newmonth starts
-    if (month(max_hist_date) < month(max_curr_date) &
-                                     nrow(t_al_curr) > 100) {
-      t_al_hist <- t_al_curr
-      write.csv(t_al_hist, here::here("Data", "kpi_prop_log.csv"), row.names = FALSE)
-    # Append curr to hist if within month
-    } else if (max_curr_date > max_hist_date & nrow(t_al_curr) > 100) {
-      t_al_hist <- rbind(t_al_hist, t_al_curr)
-      write.csv(t_al_hist, here::here("Data", "kpi_prop_log.csv"), row.names = FALSE)
-    }
-  }
 
-  # Check if history exists
-  exists('t_al_hist') && is.data.frame(base::get('t_al_hist'))
-  
-#----------------------------------------------------------------------------------------------------------
-      
-      if (sum(hits)==0) {
-        write.csv(bsc_data_napi, sprintf("History_bsc_%s.csv", paste0(year(Sys.Date()), month(Sys.Date()))), row.names = FALSE)
-        history <- bsc_data_napi
-      }else{
-        history <- read.csv(sprintf("History_bsc_%s.csv", paste0(year(Sys.Date()-1), month(Sys.Date()-1))), stringsAsFactors = FALSE)
-        #ideiglenes: dátumformátumot a 100. sorban kell amúgy konvertálni
-        #bsc_data_napi$DATUM <- ymd_hms(bsc_data_napi$DATUM)
-        #bsc_data_napi$DATUM <- as.character((bsc_data_napi$DATUM))
-        ###
-        history <- rbind(history, bsc_data_napi)
-        write.csv(history, sprintf("History_bsc_%s.csv", paste0(year(Sys.Date()-1), month(Sys.Date()-1))), row.names = FALSE)
-      }
-      
-      #NAK kivétel csak AFC manuálisból lásd lntebb
-#       nak <- read.csv("NAK.csv")
-#       id <-  data.frame(vk =match(history$VONALKOD, nak$VONALKOD))
-#       history <- history[is.na(id),]
-#       
-      
-      #Transform
-      history$DATUM <- ymd_hms(history$DATUM)
-      history$DATUM <- as.character((history$DATUM))
-      history <- history[history$ERK_SZERZ < 100, ] #outlier kezelés
-      
-      #Generators
-      generate_table <- function(tabla, ...) {
-        tbl_df(tabla) %>%
-          group_by_(...) %>%
-            summarize(DARAB = length(VONALKOD),
-                      ERK_SZERZ_ATLAG = round(mean(ERK_SZERZ), 2),
-                      ERK_SZERZ_MEDIAN = round(median(ERK_SZERZ), 2),
-                      ERK_SZERZ_SD = round(sd(ERK_SZERZ), 2),
-                      ERK_SZERZ_MAD = round(mad(ERK_SZERZ), 2)) %>%
-                        ungroup() %>% #weight within monthly volume
-                          group_by_("DATUM") %>% #weight within monthly volume
-                            mutate(DB_SULY = round(DARAB/sum(DARAB), 4)) %>% #weight within monthly volume
-                              ungroup() %>% # bring stacked bar text to middle position
-                                group_by_(...) %>% # bring stacked bar text to middle position
-                                   mutate(POS=cumsum(ERK_SZERZ_ATLAG)-(0.5*ERK_SZERZ_ATLAG)) # bring stacked bar text to middle position
-            }
-    
-      
-      generate_table_15 <- function(tabla, ...) {
-        tbl_df(tabla) %>%
-         group_by_(...) %>%
-          summarize(DARAB = length(VONALKOD),
-                    NAGYOBB_15_NAP = sum(ifelse(ERK_SZERZ > 15, 1, 0)/length(VONALKOD))) %>%
-              ungroup() %>% #weight within monthly volume
-                group_by_("DATUM") %>% #weight within monthly volume
-                   mutate(DB_SULY = round(DARAB/sum(DARAB), 4)) %>% #weight within monthly volume
-                      ungroup() %>% # bring stacked bar text to middle position
-                         group_by_(...) %>% # bring stacked bar text to middle position
-                            mutate(POS=cumsum(NAGYOBB_15_NAP)-(0.5*NAGYOBB_15_NAP)) # bring stacked bar text to middle position
-            }
-      
-      #BSC erk_szerz
-        #FULL
-        erk_szerz <- generate_table(history, "DATUM")
-        write.csv(erk_szerz, "erk_szerz_full.csv", row.names = FALSE)
-        
-        ggplot(erk_szerz, aes(x=DATUM, y=ERK_SZERZ_ATLAG)) +
-          geom_bar(stat = "identity", fill = "#0072B2") +
-          ylim(0,6) +
-          geom_hline(aes(yintercept=3.5), colour="#990000", linetype = "dashed") +
-            geom_text(aes(0,3.5,label = "Kiváló (3,5)", vjust = 0, hjust = 0), size = 4.5) +
-          geom_hline(aes(yintercept=4.5), colour="#990000", linetype = "dashed") +
-            geom_text(aes(0,4.5,label = "Jó (4,5)", vjust = 0, hjust = 0), size = 4.5) +
-          geom_hline(aes(yintercept=5.5), colour="#990000", linetype = "dashed") +
-            geom_text(aes(0,5.5,label = "Átlagos (5,5)", vjust = 0, hjust = 0), size = 4.5) +
-          geom_text(aes(label=ERK_SZERZ_ATLAG, y = POS), size = 4, color = "black", fontface = "bold") +
-          theme(axis.text.x = element_text(angle = 90)) +
-          ggtitle("AFC benchmark: érkezéstõl menesztésig munkanap átlag")
-        ggsave("Kotido_FULL.png", width=10, height=7.5, dpi=300)  
-      
-    
+# Add to log on local storage then load log
+t_al_log <- write_to_log(t_al_curr, here::here("Data", "al_kpi_log.csv"))
 
-      
-        #TERMCSOP
-        erk_szerz_term <- generate_table(history, "DATUM", "TERMCSOP")
-        write.csv(erk_szerz_term, "erk_szerz_term_full.csv", row.names = FALSE)
-      
-        #KÖTÉSI MÓD + TERMCSOP
-        erk_szerz_kpi_term <- generate_table(history, "DATUM", "KOTESI_MOD", "TERMCSOP")
-        erk_szerz_kpi_term <- erk_szerz_kpi_term[erk_szerz_kpi_term$ERK_SZERZ_ATLAG < 50 & erk_szerz_kpi_term$DARAB > 10, ]
-        
-        ggplot(erk_szerz_kpi_term, aes(x=DATUM, y=ERK_SZERZ_ATLAG)) +
-          geom_bar(stat = "identity", fill = "#0072B2") +
-          #ylim(0,10) +
-          geom_hline(aes(yintercept=3.5), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,3.5,label = "Kiváló (3,5)", vjust = 0, hjust = 0), size = 2.6) +
-          geom_hline(aes(yintercept=4.5), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,4.5,label = "Jó (4,5)", vjust = 0, hjust = 0), size = 2.6) +
-          geom_hline(aes(yintercept=5.5), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,5.5,label = "Átlagos (5,5)", vjust = 0, hjust = 0), size = 2.6) +
-          geom_text(aes(label=ERK_SZERZ_ATLAG, y = POS+0.8), size = 2.5, color = "black", fontface = "bold") +
-          geom_text(aes(label=sprintf("%1.0f%%", 100*DB_SULY), y = POS-0.5), size = 2.5, color = "black", fontface = "bold") +
-          theme(axis.text.x = element_text(angle = 90)) +
-          ggtitle("AFC benchmark: érkezéstõl menesztésig munkanap átlag\n(A százalékos érték a kategória napi állományon belüli súlyát mutatja)") +
-          facet_grid(KOTESI_MOD ~ TERMCSOP)
-        ggsave("Kotido_FULL_kpi_termcsop.png", width=14, height=7.5, dpi=300)
-    
-    ######################################################################################################    
-            
-      #AFC manualis
-        #NAK kivétel csak AFC manuálisból lásd lentebb
-              nak <- read.csv("NAK.csv")
-              id <-  data.frame(vk =match(history$VONALKOD, nak$VONALKOD))
-              history <- history[is.na(id),]
-              
-        
-        #FULL
-        afc <- history[history$KOTVENYESITES == "Manualis", ]
-        afc_erk_szerz <- generate_table(afc, "DATUM")
-        write.csv(afc_erk_szerz, "afc_erk_szerz_full.csv", row.names = FALSE)
-        
-        ggplot(afc_erk_szerz, aes(x=DATUM, y=ERK_SZERZ_ATLAG)) +
-          geom_bar(stat = "identity", fill = "#0072B2") +
-          #ylim(0,7) +
-          geom_hline(aes(yintercept=5), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,5,label = "Kiváló (5)", vjust = 0, hjust = 0), size = 4.5) +
-          geom_hline(aes(yintercept=6), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,6,label = "Jó (6)", vjust = 0, hjust = 0), size = 4.5) +
-          geom_hline(aes(yintercept=7), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,7,label = "Átlagos (7)", vjust = 0, hjust = 0), size = 4.5) +
-          geom_text(aes(label=ERK_SZERZ_ATLAG, y = POS), size = 4, color = "black", fontface = "bold") +
-          theme(axis.text.x = element_text(angle = 90)) +
-          ggtitle("AFC manuális menesztés benchmark: érkezéstõl menesztésig munkanap átlag")
-        ggsave("Kotido_AFC.png", width=10, height=7.5, dpi=300)  
-        
-        #TERMCSOP
-        afc_erk_szerz_term <- generate_table(afc, "DATUM", "TERMCSOP")
-        write.csv(afc_erk_szerz_term, "afc_erk_szerz_term.csv", row.names = FALSE)
-#         
-        #KÖTÉSI MÓD + TERMCSOP
-        afc_erk_szerz_kpi_term <- generate_table(afc, "DATUM", "KOTESI_MOD", "TERMCSOP")
-        afc_erk_szerz_kpi_term <- afc_erk_szerz_kpi_term[afc_erk_szerz_kpi_term$DARAB > 30, ]
-        
-        ggplot(afc_erk_szerz_kpi_term, aes(x=DATUM, y=ERK_SZERZ_ATLAG)) +
-          geom_bar(stat = "identity", fill = "#0072B2") +
-          #ylim(0,10) +
-          geom_hline(aes(yintercept=5), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,5,label = "Kiváló (5)", vjust = 0, hjust = 0), size = 2.5) +
-          geom_hline(aes(yintercept=6), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,6,label = "Jó (6)", vjust = 0, hjust = 0), size = 2.5) +
-          geom_hline(aes(yintercept=7), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,7,label = "Átlagos (7)", vjust = 0, hjust = 0), size = 2.5) +
-          geom_text(aes(label=ERK_SZERZ_ATLAG, y = POS+0.8), size = 2.5, color = "black", fontface = "bold") +
-          geom_text(aes(label=sprintf("%1.0f%%", 100*DB_SULY), y = POS-0.5), size = 2.5, color = "black", fontface = "bold") +
-          theme(axis.text.x = element_text(angle = 90)) +
-          ggtitle("AFC manuális menesztés benchmark: érkezéstõl menesztésig munkanap átlag\n(A százalékos érték a kategória napi állományon belüli súlyát mutatja)") +
-          facet_grid(KOTESI_MOD ~ TERMCSOP)
-        ggsave("Kotido_AFC_kpi_termcsop.png", width=12, height=8, dpi=500) 
-        
-        
-    #######################################################################################################
-        
-        #15 napon túli arány
-        #FULL
-        afc <- history[history$KOTVENYESITES == "Manualis", ]
-        afc15 <- generate_table_15(afc, "DATUM")
-        write.csv(afc15, "afc15.csv", row.names = FALSE)
-        
-        ggplot(afc15, aes(x=DATUM, y=NAGYOBB_15_NAP)) +
-          geom_bar(stat = "identity", fill = "#0072B2") +
-          scale_y_continuous(labels=percent) +
-          geom_hline(aes(yintercept=0.05), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,0.05,label = "Kiváló (5%)", vjust = 0, hjust = 0), size = 4.5) +
-          geom_hline(aes(yintercept=0.07), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,0.07,label = "Jó (7%)", vjust = 0, hjust = 0), size = 4.5) +
-          geom_hline(aes(yintercept=0.09), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,0.09,label = "Átlagos (9%)", vjust = 0, hjust = 0), size = 4.5) +
-          geom_text(aes(label=sprintf("%1.2f%%", 100*NAGYOBB_15_NAP), y = POS), size = 4, color = "black", fontface = "bold") +
-          theme(axis.text.x = element_text(angle = 90)) +
-          ggtitle("AFC 15 napon túl kötvényesített benchmark: arány")
-        ggsave("15_nap.png", width=10, height=7.5, dpi=300)  
-        
-        #TERMCSOP
-        afc15_term <- generate_table_15(afc, "DATUM", "TERMCSOP")
-        write.csv(afc15_term, "afc15_term.csv", row.names = FALSE)
-#         
-        #TERMCSOP + KÖTÉSI MÓD
-        afc15_kpi_termcsop <- generate_table_15(afc, "DATUM", "TERMCSOP", "KOTESI_MOD")
-        afc15_kpi_termcsop <- afc15_kpi_termcsop[afc15_kpi_termcsop$DARAB > 30, ]
-        
-        ggplot(afc15_kpi_termcsop, aes(x=DATUM, y=NAGYOBB_15_NAP)) +
-          geom_bar(stat = "identity", fill = "#0072B2") +
-          scale_y_continuous(labels=percent) +
-          geom_hline(aes(yintercept=0.05), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,0.05,label = "Kiváló (5%)", vjust = 0, hjust = 0), size = 2.5) +
-          geom_hline(aes(yintercept=0.07), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,0.07,label = "Jó (7%)", vjust = 0, hjust = 0), size = 2.5) +
-          geom_hline(aes(yintercept=0.09), colour="#990000", linetype = "dashed") +
-          geom_text(aes(0,0.09,label = "Átlagos (9%)", vjust = 0, hjust = 0), size = 2.5) +
-          geom_text(aes(label=sprintf("%1.2f%%", 100*NAGYOBB_15_NAP), y = POS+0.025), size = 2.5, color = "black", fontface = "bold") +
-          geom_text(aes(label=sprintf("%1.0f%%", 100*DB_SULY), y = POS), size = 2.5, color = "black", fontface = "bold") +
-          theme(axis.text.x = element_text(angle = 90)) +
-          ggtitle("AFC 15 napon túl kötvényesített benchmark: arány\n(A második százalékos érték a kategória napi állományon belüli súlyát mutatja)") +
-          facet_grid(KOTESI_MOD ~ TERMCSOP)
-        ggsave("15_nap_kpi_termcsop.png", width=14, height=7.5, dpi=300) 
+# Transform and save to dashboard intput
+if (!is.null(t_al_log)) {
+  t_al_log$DATUM <- ymd_hms(t_al_log$DATUM)
+  t_al_log$DATUM <- as.character((t_al_log$DATUM))
+  t_al_log <- t_al_log[t_al_log$ERK_SZERZ < 100, ] #outlier kezelés
   
-  #Trajectory manuális
-  traject <- bsc_data_napi[bsc_data_napi$KOTVENYESITES == "Manualis", ]
+  
+  write.csv(
+    generate_table(t_al_log, "DATUM"),
+    here::here("Data", "erk_szerz_full.csv"),
+    row.names = FALSE
+  )
+  
+  write.csv(
+    generate_table(t_al_log, "DATUM", "TERMCSOP"),
+    here::here("Data", "erk_szerz_term_full.csv"),
+    row.names = FALSE
+  )
+  
+  write.csv(
+    generate_table(t_al_log[t_al_log$KOTVENYESITES == "Manualis",], "DATUM"),
+    here::here("Data", "afc_erk_szerz_full.csv"),
+    row.names = FALSE
+  )
+  
+  write.csv(
+    generate_table(t_al_log[t_al_log$KOTVENYESITES == "Manualis",], "DATUM", "TERMCSOP"),
+    here::here("Data", "afc_erk_szerz_term.csv"),
+    row.names = FALSE
+  )
+  
+  write.csv(
+    generate_table(t_al_log[t_al_log$KOTVENYESITES == "Manualis",], "DATUM", "TERMCSOP"),
+    here::here("Data", "afc_erk_szerz_term.csv"),
+    row.names = FALSE
+  )
+  
+  write.csv(
+    generate_table_15(t_al_log[t_al_log$KOTVENYESITES == "Manualis",], "DATUM"),
+    here::here("Data", "afc15.csv"),
+    row.names = FALSE
+  )
+  
+  write.csv(
+    generate_table_15(t_al_log[t_al_log$KOTVENYESITES == "Manualis",], "DATUM", "TERMCSOP"),
+    here::here("Data", "afc15_term.csv"),
+    row.names = FALSE
+  )
+  
+  
+  traject <- t_al_curr[t_al_curr$KOTVENYESITES == "Manualis", ]
   traject <- traject[traject$ERK_SZERZ < 100, ]
   traject$SZERZDAT <- ymd_hms(traject$SZERZDAT)
-  traject$SZERZDAT <-  format(as.POSIXct(traject$SZERZDAT), "%Y-%m-%d")
+  traject$SZERZDAT <-
+    format(as.POSIXct(traject$SZERZDAT), "%Y-%m-%d")
   traject$SZERZDAT <- as.character((traject$SZERZDAT))
-   
+  
   idosor <- group_by(traject, SZERZDAT) %>%
-              summarize(ERK_SZERZ = mean(ERK_SZERZ),
-                        DARAB = length(VONALKOD)) %>%
-                          mutate(cs_prod = cumsum(ERK_SZERZ*DARAB),
-                                 cs = cumsum(DARAB)) %>%
-                          mutate(ERK_SZERZ_ROLL = cs_prod/cs)
-  write.csv(idosor, "trajectory.csv", row.names = FALSE)
-   
+    summarize(ERK_SZERZ = mean(ERK_SZERZ),
+              DARAB = length(VONALKOD)) %>%
+    mutate(cs_prod = cumsum(ERK_SZERZ * DARAB),
+           cs = cumsum(DARAB)) %>%
+    mutate(ERK_SZERZ_ROLL = cs_prod / cs)
+  write.csv(idosor, here::here("Data", "trajectory.csv"), row.names = FALSE)
+  
   #Trajectory manuális termékeknként
   idosor_term <- group_by(traject, SZERZDAT, TERMCSOP) %>%
-                  summarize(ERK_SZERZ = mean(ERK_SZERZ),
-                            DARAB = length(VONALKOD)) %>%
-                            ungroup() %>%
-                            group_by(TERMCSOP) %>%
-                              mutate(cs_prod = cumsum(ERK_SZERZ*DARAB),
-                                    cs = cumsum(DARAB)) %>%
-                              mutate(ERK_SZERZ_ROLL = cs_prod/cs)
-  write.csv(idosor_term, "trajectory_term.csv", row.names = FALSE)
-  
-   
+    summarize(ERK_SZERZ = mean(ERK_SZERZ),
+              DARAB = length(VONALKOD)) %>%
+    ungroup() %>%
+    group_by(TERMCSOP) %>%
+    mutate(cs_prod = cumsum(ERK_SZERZ * DARAB),
+           cs = cumsum(DARAB)) %>%
+    mutate(ERK_SZERZ_ROLL = cs_prod / cs)
+  write.csv(idosor_term,
+            here::here("Data", "trajectory_term.csv"),
+            row.names = FALSE)
 }
+  
+
 
   #Kontakt adatok#########################################################################x  
   # Set JAVA_HOME, set max. memory, and load rJava library
@@ -652,3 +475,7 @@ dbDisconnect(jdbcConnection)
   # Copy to public folder
   file.copy("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor/BSC_dashboard.html", "C:/Users/PoorJ/Desktop/Mischung/R/AFC_publish", overwrite = T)
   
+  
+  # Redirect stdout back to console
+sink(type = "message")
+close(scriptLog)

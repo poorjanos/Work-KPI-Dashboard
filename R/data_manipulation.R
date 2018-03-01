@@ -34,3 +34,38 @@ write_to_log <- function(df_curr, path_to_log) {
     }
   }
 }
+
+
+# Function to generate KPI aggregates
+generate_table <- function(tabla, ...) {
+  tbl_df(tabla) %>%
+    group_by_(...) %>%
+    summarize(
+      DARAB = length(VONALKOD),
+      ERK_SZERZ_ATLAG = round(mean(ERK_SZERZ), 2),
+      ERK_SZERZ_MEDIAN = round(median(ERK_SZERZ), 2),
+      ERK_SZERZ_SD = round(sd(ERK_SZERZ), 2),
+      ERK_SZERZ_MAD = round(mad(ERK_SZERZ), 2)
+    ) %>%
+    ungroup() %>% #weight within monthly volume
+    group_by_("DATUM") %>% #weight within monthly volume
+    mutate(DB_SULY = round(DARAB / sum(DARAB), 4)) %>% #weight within monthly volume
+    ungroup() %>% # bring stacked bar text to middle position
+    group_by_(...) %>% # bring stacked bar text to middle position
+    mutate(POS = cumsum(ERK_SZERZ_ATLAG) - (0.5 * ERK_SZERZ_ATLAG)) # bring stacked bar text to middle position
+}
+
+
+# Function to generate KPI aggregates
+generate_table_15 <- function(tabla, ...) {
+  tbl_df(tabla) %>%
+    group_by_(...) %>%
+    summarize(DARAB = length(VONALKOD),
+              NAGYOBB_15_NAP = sum(ifelse(ERK_SZERZ > 15, 1, 0) / length(VONALKOD))) %>%
+    ungroup() %>% #weight within monthly volume
+    group_by_("DATUM") %>% #weight within monthly volume
+    mutate(DB_SULY = round(DARAB / sum(DARAB), 4)) %>% #weight within monthly volume
+    ungroup() %>% # bring stacked bar text to middle position
+    group_by_(...) %>% # bring stacked bar text to middle position
+    mutate(POS = cumsum(NAGYOBB_15_NAP) - (0.5 * NAGYOBB_15_NAP)) # bring stacked bar text to middle position
+}

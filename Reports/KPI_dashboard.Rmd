@@ -1,0 +1,732 @@
+---
+title: "BSC napi monitor"
+output: 
+  flexdashboard::flex_dashboard:
+    theme: cosmo
+    orientation: rows
+---
+
+Kötvényesítési idõ (teljes)
+===================================== 
+    
+Row
+-------------------------------------
+    
+### Érkezéstõl menesztésig átlag (teljes)
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_szerz <- read.csv("erk_szerz_full.csv")
+erk_szerz <- erk_szerz[,-c(7,8)]
+erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+erk_szerz <- dplyr::slice(erk_szerz, length(DATUM))
+
+flexdashboard::valueBox(erk_szerz$ÁTLAG, icon = ifelse(erk_szerz$ÁTLAG > 5.51, "fa-thumbs-o-down", "fa-thumbs-o-up"),
+                        color = ifelse(erk_szerz$ÁTLAG > 5.51, "warning", "primary"))
+```
+
+###  Érkezéstõl menesztésig medián (teljes)
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_szerz <- read.csv("erk_szerz_full.csv")
+erk_szerz <- erk_szerz[,-c(7,8)]
+erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+erk_szerz <- dplyr::slice(erk_szerz, length(DATUM))
+
+flexdashboard::valueBox(erk_szerz$MEDIÁN, icon =  "fa-balance-scale")
+```
+   
+### Darabszám (teljes)
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_szerz <- read.csv("erk_szerz_full.csv")
+erk_szerz <- erk_szerz[,-c(7,8)]
+erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+erk_szerz <- dplyr::slice(erk_szerz, length(DATUM))
+
+flexdashboard::valueBox(erk_szerz$DARAB, icon = "fa-signal")
+```
+   
+Row
+-------------------------------------
+   
+### Kötvényesítési idõ (automatikus és manuális)
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+
+erk_szerz <- read.csv("erk_szerz_full.csv")
+erk_szerz <- erk_szerz[erk_szerz$DARAB > 1, ]
+erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+
+ggplot(erk_szerz, aes(x=DATUM, group = 1)) +
+          geom_line(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 1) +
+          geom_line(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 1) +
+          geom_point(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 3, shape=15) +
+          geom_point(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 3, shape=15) +
+          coord_cartesian(ylim=c(0, 8)) +
+          geom_hline(aes(yintercept=3.5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,3.5,label = "Kiváló (3,5)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=4.5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,4.5,label = "Jó (4,5)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=5.5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,5.5,label = "Átlagos (5,5)", vjust = 0, hjust = 0), size = 3.5) +
+          theme_minimal() +
+          theme(axis.text.x = element_text(angle = 90)) +
+          labs(y = "Kötvényesítési idõ (mnap)",
+          x = "Hónap napja",
+          colour = "Mutató")
+```
+
+### Kötvényesítési idõ (automatikus és manuális) termékenként
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(dplyr)
+erk_szerz_term <- read.csv("erk_szerz_term_full.csv")
+erk_szerz_term <- dplyr::rename(erk_szerz_term, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+
+
+ggplot(erk_szerz_term, aes(x=DATUM, group = 1)) +
+          geom_line(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 1) +
+          geom_line(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 1) +
+          geom_point(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 2, shape=15) +
+          geom_point(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 2, shape=15) +
+          geom_hline(aes(yintercept=3.5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,3.5,label = "Kiváló (3,5)", vjust = 0, hjust = 0), size = 2.5) +
+          geom_hline(aes(yintercept=4.5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,4.5,label = "Jó (4,5)", vjust = 0, hjust = 0), size = 2.5) +
+          geom_hline(aes(yintercept=5.5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,5.5,label = "Átlagos (5,5)", vjust = 0, hjust = 0), size = 2.5) +
+          theme_minimal() +
+          theme(axis.text.x = element_text(angle = 90)) +
+          labs(y = "Kötvényesítés idõ (mnap)",
+          x = "Hónap napja",
+          colour = "Mutató") +
+          theme(legend.position = c(0.9, 0.8)) +
+          facet_grid(. ~ TERMCSOP, scales = "free") 
+```
+
+   
+Kötvényesítési idõ (manuális)
+=====================================     
+
+Row
+-------------------------------------
+    
+### Érkezéstõl menesztésig átlag (manuális)
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+afc_erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+afc_erk_szerz <- afc_erk_szerz[,-c(7,8)]
+afc_erk_szerz <- dplyr::rename(afc_erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+afc_erk_szerz <- dplyr::slice(afc_erk_szerz, length(DATUM))
+
+flexdashboard::valueBox(afc_erk_szerz$ÁTLAG, icon = ifelse(afc_erk_szerz$ÁTLAG > 7.01, "fa-thumbs-o-down", "fa-thumbs-o-up"),
+                        color = ifelse(afc_erk_szerz$ÁTLAG > 7.01, "warning", "primary"))
+```
+
+### Érkezéstõl menesztésig medián (manuális)
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+afc_erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+afc_erk_szerz <- afc_erk_szerz[,-c(7,8)]
+afc_erk_szerz <- dplyr::rename(afc_erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+afc_erk_szerz <- dplyr::slice(afc_erk_szerz, length(DATUM))
+
+flexdashboard::valueBox(afc_erk_szerz$MEDIÁN, icon = "fa-balance-scale")
+```
+   
+### Darabszám
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+afc_erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+afc_erk_szerz <- afc_erk_szerz[,-c(7,8)]
+afc_erk_szerz <- dplyr::rename(afc_erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+afc_erk_szerz <- dplyr::slice(afc_erk_szerz, length(DATUM))
+
+flexdashboard::valueBox(afc_erk_szerz$DARAB, icon = "fa-signal")
+```
+   
+Row
+-------------------------------------
+   
+### Érkezéstõl menesztésig (manuális)
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+
+ggplot(erk_szerz, aes(x=DATUM, group = 1)) +
+          geom_line(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 1) +
+          geom_line(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 1) +
+          geom_point(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 3, shape=15) +
+          geom_point(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 3, shape=15) +
+          geom_hline(aes(yintercept=5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,5,label = "Kiváló (5)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=6), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,6,label = "Jó (6)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=7), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,7,label = "Átlagos (7)", vjust = 0, hjust = 0), size = 3.5) +
+          theme_minimal() +
+          theme(axis.text.x = element_text(angle = 90)) +
+          labs(y = "Kötvényesítés átfutási idõ (mnap)",
+                x = "Hónap napja",
+                colour = "Mutató") 
+```
+
+### Érkezéstõl menesztésig termékenként (manuális)
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(dplyr)
+erk_szerz_term <- read.csv("afc_erk_szerz_term.csv")
+erk_szerz_term <- dplyr::rename(erk_szerz_term, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+
+ggplot(erk_szerz_term, aes(x=DATUM, group = 1)) +
+          geom_line(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 1) +
+          geom_line(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 1) +
+          geom_point(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 2, shape=15) +
+          geom_point(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 2, shape=15) +
+          geom_hline(aes(yintercept=5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,5,label = "Kiváló (5)", vjust = 0, hjust = 0), size = 2.5) +
+          geom_hline(aes(yintercept=6), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,6,label = "Jó (6)", vjust = 0, hjust = 0), size = 2.5) +
+          geom_hline(aes(yintercept=7), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,7,label = "Átlagos (7)", vjust = 0, hjust = 0), size = 2.5) +
+          theme_minimal() +
+          theme(axis.text.x = element_text(angle = 90)) +
+          labs(y = "Kötvényesítés átfutási idõ (mnap)",
+          x = "Hónap napja",
+          colour = "Mutató") +
+          theme(legend.position = c(0.9, 0.8)) +
+          facet_grid(. ~ TERMCSOP, scales = "free")
+```
+
+
+
+Irat lezárási idõ
+=====================================     
+
+Row
+-------------------------------------
+    
+### Érkezéstõl lezárásig átlag
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+erk_lezar_full <- erk_lezar_full[,-c(7,8)]
+erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
+                         MEDIÁN = ERK_LEZAR_MEDIAN,
+                         SD = ERK_LEZAR_SD,
+                         MAD = ERK_LEZAR_MAD)
+erk_lezar_full <- dplyr::slice(erk_lezar_full, length(DATUM))
+
+flexdashboard::valueBox(erk_lezar_full$ÁTLAG, icon = ifelse(erk_lezar_full$ÁTLAG > 4.51, "fa-thumbs-o-down", "fa-thumbs-o-up"),
+                        color = ifelse(erk_lezar_full$ÁTLAG > 4.51, "warning", "primary"))
+```
+
+### Érkezéstõl lezárásig medián
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+erk_lezar_full <- erk_lezar_full[,-c(7,8)]
+erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
+                         MEDIÁN = ERK_LEZAR_MEDIAN,
+                         SD = ERK_LEZAR_SD,
+                         MAD = ERK_LEZAR_MAD)
+erk_lezar_full <- dplyr::slice(erk_lezar_full, length(DATUM))
+
+flexdashboard::valueBox(erk_lezar_full$MEDIÁN, icon = "fa-balance-scale")
+```
+   
+### Darabszám
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+erk_lezar_full <- erk_lezar_full[,-c(7,8)]
+erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
+                         MEDIÁN = ERK_LEZAR_MEDIAN,
+                         SD = ERK_LEZAR_SD,
+                         MAD = ERK_LEZAR_MAD)
+erk_lezar_full <- dplyr::slice(erk_lezar_full, length(DATUM))
+flexdashboard::valueBox(erk_lezar_full$DARAB, icon = "fa-signal")
+```
+   
+Row
+-------------------------------------
+   
+### Érkezéstõl lezárásig
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+library(ggplot2)
+erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
+                         MEDIÁN = ERK_LEZAR_MEDIAN,
+                         SD = ERK_LEZAR_SD,
+                         MAD = ERK_LEZAR_MAD)
+
+ggplot(erk_lezar_full, aes(x=DATUM, group = 1)) +
+      geom_line(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 1) +
+      geom_line(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 1) +
+      geom_point(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 3, shape=15) +
+      geom_point(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 3, shape=15) +
+      geom_hline(aes(yintercept=2.5), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,2.5,label = "Kiváló (2,5)", vjust = 0, hjust = 0), size = 3.5) +
+      geom_hline(aes(yintercept=3.5), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,3.5,label = "Jó (3,5)", vjust = 0, hjust = 0), size = 3.5) +
+      geom_hline(aes(yintercept=4.5), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,4.5,label = "Átlagos (4,5)", vjust = 0, hjust = 0), size = 3.5) +
+      labs(y = "Irat lezárási idõ (mnap)",
+          x = "Hónap napja",
+          colour = "Mutató") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 90))
+```
+
+### Érkezéstõl lezárásig típusonként
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(dplyr)
+erk_lezar_irattip <- read.csv("kontakt_erk_lezar_irattip.csv")
+erk_lezar_irattip <- dplyr::rename(erk_lezar_irattip, ÁTLAG = ERK_LEZAR_ATLAG,
+                         MEDIÁN = ERK_LEZAR_MEDIAN,
+                         SD = ERK_LEZAR_SD,
+                         MAD = ERK_LEZAR_MAD)
+
+ggplot(erk_lezar_irattip, aes(x=DATUM, group = 1)) +
+      geom_line(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 1) +
+      geom_line(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 1) +
+      geom_point(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 2, shape=15) +
+      geom_point(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 2, shape=15) +
+      geom_hline(aes(yintercept=2.5), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,2.5,label = "Kiváló (2,5)", vjust = 0, hjust = 0), size = 2.5) +
+      geom_hline(aes(yintercept=3.5), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,3.5,label = "Jó (3,5)", vjust = 0, hjust = 0), size = 2.5) +
+      geom_hline(aes(yintercept=4.5), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,4.5,label = "Átlagos (4,5)", vjust = 0, hjust = 0), size = 2.5) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 90),
+            strip.text.x = element_text(angle = 0, size = 7)) +
+      labs(y = "Irat lezárási idõ (mnap)",
+          x = "Hónap napja",
+          colour = "Mutató") +
+          theme(legend.position = c(0.9, 0.8)) +
+      facet_grid(.~IRAT_TIPUS)
+```
+
+
+
+
+
+Díjkönyvelési idõ
+=====================================     
+
+Row
+-------------------------------------
+    
+### Érkezéstõl könyvelésig átlag
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- erk_konyv[,-c(7,8)]
+erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
+                         MEDIÁN = ERK_KONYV_MEDIAN,
+                         SD = ERK_KONYV_SD,
+                         MAD = ERK_KONYV_MAD)
+erk_konyv <- dplyr::slice(erk_konyv, length(DATUM))
+
+flexdashboard::valueBox(erk_konyv$ÁTLAG, icon = ifelse(erk_konyv$ÁTLAG > 4.51, "fa-thumbs-o-down", "fa-thumbs-o-up"),
+                        color = ifelse(erk_konyv$ÁTLAG > 4.51, "warning", "primary"))
+```
+
+### Érkezéstõl könyvelésig medián
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- erk_konyv[,-c(7,8)]
+erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
+                         MEDIÁN = ERK_KONYV_MEDIAN,
+                         SD = ERK_KONYV_SD,
+                         MAD = ERK_KONYV_MAD)
+erk_konyv <- dplyr::slice(erk_konyv, length(DATUM))
+
+flexdashboard::valueBox(erk_konyv$MEDIÁN, icon = "fa-balance-scale")
+```
+   
+### Darabszám
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- erk_konyv[,-c(7,8)]
+erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
+                         MEDIÁN = ERK_KONYV_MEDIAN,
+                         SD = ERK_KONYV_SD,
+                         MAD = ERK_KONYV_MAD)
+erk_konyv <- dplyr::slice(erk_konyv, length(DATUM))
+
+flexdashboard::valueBox(erk_konyv$DARAB, icon = "fa-signal")
+```
+   
+Row
+-------------------------------------
+   
+### Érkezéstõl könyvelésig
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
+                         MEDIÁN = ERK_KONYV_MEDIAN,
+                         SD = ERK_KONYV_SD,
+                         MAD = ERK_KONYV_MAD)
+ggplot(erk_konyv, aes(x=DATUM, group = 1)) +
+          geom_line(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 1) +
+          geom_line(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 1) +
+          geom_point(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 3, shape=15) +
+          geom_point(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 3, shape=15) +
+          geom_hline(aes(yintercept=3.5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,3.5,label = "Kiváló (3,5)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=4.5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,4.5,label = "Jó (4,5)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=5.5), colour="#990000", linetype = "dashed") +
+            geom_text(aes(0,5.5,label = "Átlagos (5,5)", vjust = 0, hjust = 0), size = 3.5) +
+          theme_minimal() +
+          theme(axis.text.x = element_text(angle = 90)) +
+          labs(y = "Díjkönyvelési idõ (mnap)",
+          x = "Hónap napja",
+          colour = "Mutató")
+```
+
+### Érkezéstõl könyvelésig típusonként
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(dplyr)
+erk_konyv_tip <- read.csv("pu_erk_konyv_tipus.csv")
+erk_konyv_tip <- dplyr::rename(erk_konyv_tip, ÁTLAG = ERK_KONYV_ATLAG,
+                         MEDIÁN = ERK_KONYV_MEDIAN,
+                         SD = ERK_KONYV_SD,
+                         MAD = ERK_KONYV_MAD)
+
+ggplot(erk_konyv_tip, aes(x=DATUM, group = 1)) +
+      geom_line(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 1) +
+      geom_line(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 1) +
+      geom_point(aes(y = ÁTLAG, colour = "ÁTLAG"), size = 2, shape=15) +
+      geom_point(aes(y = MEDIÁN, colour = "MEDIÁN"), size = 2, shape=15) +
+      geom_hline(aes(yintercept=3.5), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,3.5,label = "Kiváló (3,5)", vjust = 0, hjust = 0), size = 2.5) +
+      geom_hline(aes(yintercept=4.5), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,4.5,label = "Jó (4,5)", vjust = 0, hjust = 0), size = 2.5) +
+      geom_hline(aes(yintercept=5.5), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,5.5,label = "Átlagos (5,5)", vjust = 0, hjust = 0), size = 2.5) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 90)) +
+      labs(y = "Díjkönyvelési idõ (mnap)",
+          x = "Hónap napja",
+          colour = "Mutató") +
+      theme(legend.position = c(0.9, 0.8)) +
+      facet_grid(.~TIPUS)
+```
+
+
+
+   
+15 napon túl
+=====================================     
+
+Row
+-------------------------------------
+
+### Kötvényesítés (manuális) 15 napon túl
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+afc15 <- read.csv("afc15.csv")
+afc15 <- dplyr::slice(afc15, length(DATUM))
+afc15$NAGYOBB_15_NAP <- round(afc15$NAGYOBB_15_NAP*100, 2)
+
+flexdashboard::valueBox(afc15$NAGYOBB_15_NAP, icon = ifelse(afc15$NAGYOBB_15_NAP > 9.01, "fa-thumbs-o-down", "fa-thumbs-o-up"),
+                        color = ifelse(afc15$NAGYOBB_15_NAP > 9.01, "warning", "primary"))
+```
+
+### Iratkezelés 15 napon túl
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+irat15 <-read.csv("irat15.csv")
+irat15 <- dplyr::slice(irat15, length(DATUM))
+irat15$NAGYOBB_15_NAP <- round(irat15$NAGYOBB_15_NAP*100, 2)
+
+flexdashboard::valueBox(irat15$NAGYOBB_15_NAP, icon = ifelse(irat15$NAGYOBB_15_NAP > 3.01, "fa-thumbs-o-down", "fa-thumbs-o-up"),
+                        color = ifelse(irat15$NAGYOBB_15_NAP > 3.01, "warning", "primary"))
+```
+
+Row {.tabset .tabset-fade}
+-------------------------------------
+
+
+### Kötvényesítés (manuális) 15 napon túl
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(scales)
+afc15 <- read.csv("afc15.csv")
+
+ggplot(afc15, aes(x=DATUM, group = 1)) +
+          geom_line(aes(y = NAGYOBB_15_NAP), size = 1, colour = "#00BFC4") +
+          geom_point(aes(y = NAGYOBB_15_NAP), size = 2, colour = "#00BFC4", shape=15) +
+          scale_y_continuous(labels=percent) +
+          geom_hline(aes(yintercept=0.05), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,0.05,label = "Kiváló (5%)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=0.07), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,0.07,label = "Jó (7%)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=0.09), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,0.09,label = "Átlagos (9%)", vjust = 0, hjust = 0), size = 3.5) +
+          labs(y = "15 napon túl teljesült arány", x = "Hónap napja") +
+          theme_minimal() +
+          theme(axis.text.x = element_text(angle = 90))
+```
+
+### Kötvényesítés (manuális) 15 napon túl termékenként
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(scales)
+afc15_term <- read.csv("afc15_term.csv")
+
+        ggplot(afc15_term, aes(x=DATUM, group = 1)) +
+          geom_line(aes(y = NAGYOBB_15_NAP), size = 1, colour = "#00BFC4") +
+          geom_point(aes(y = NAGYOBB_15_NAP), size = 2, colour = "#00BFC4", shape=15) +
+          scale_y_continuous(labels=percent) +
+          geom_hline(aes(yintercept=0.05), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,0.05,label = "Kiváló (5%)", vjust = 0, hjust = 0), size = 2.5) +
+          geom_hline(aes(yintercept=0.07), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,0.07,label = "Jó (7%)", vjust = 0, hjust = 0), size = 2.5) +
+          geom_hline(aes(yintercept=0.09), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,0.09,label = "Átlagos (9%)", vjust = 0, hjust = 0), size = 2.5) +
+          labs(y = "15 napon túl teljesült arány", x = "Hónap napja") +
+          theme_minimal() +
+          theme(axis.text.x = element_text(angle = 90)) +
+          facet_grid(.~TERMCSOP)
+```
+
+
+### Irat lezárási idõ 15 napon túl
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(scales)
+irat15 <- read.csv("irat15.csv")
+
+ggplot(irat15, aes(x=DATUM, group=1)) +
+      geom_line(aes(y = NAGYOBB_15_NAP), size = 1, colour = "#00BFC4") +
+      geom_point(aes(y = NAGYOBB_15_NAP), size = 2, colour = "#00BFC4", shape=15) +
+      scale_y_continuous(labels=percent) +
+      geom_hline(aes(yintercept=0.01), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,0.01,label = "Kiváló (1%)", vjust = 0, hjust = 0), size = 3.5) +
+      geom_hline(aes(yintercept=0.02), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,0.02,label = "Jó (2%)", vjust = 0, hjust = 0), size = 3.5) +
+      geom_hline(aes(yintercept=0.03), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,0.03,label = "Átlagos (3%)", vjust = 0, hjust = 0), size = 3.5) +
+      labs(y = "15 napon túl teljesült arány", x = "Hónap napja") +
+      theme_minimal() +    
+      theme(axis.text.x = element_text(angle = 90))
+```
+
+### Irat lezárási idõ 15 napon túl típusonként
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(scales)
+irat15_irattip <- read.csv("irat15_irattip.csv")
+
+      ggplot(irat15_irattip, aes(x=DATUM, group =1)) +
+      geom_line(aes(y = NAGYOBB_15_NAP), size = 1, colour = "#00BFC4") +
+      geom_point(aes(y = NAGYOBB_15_NAP), size = 2, colour = "#00BFC4", shape=15) +
+      scale_y_continuous(labels=percent) +
+      geom_hline(aes(yintercept=0.01), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,0.01,label = "Kiváló (1%)", vjust = 0, hjust = 0), size = 2.5) +
+      geom_hline(aes(yintercept=0.02), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,0.02,label = "Jó (2%)", vjust = 0, hjust = 0), size = 2.5) +
+      geom_hline(aes(yintercept=0.03), colour="#990000", linetype = "dashed") +
+      geom_text(aes(0,0.03,label = "Átlagos (3%)", vjust = 0, hjust = 0), size = 2.5) +
+      labs(y = "15 napon túl teljesült arány", x = "Hónap napja") +
+      theme_minimal() +  
+      theme(axis.text.x = element_text(angle = 90),
+            strip.text.x = element_text(angle = 0, size = 7)) +
+      facet_grid(.~IRAT_TIPUS)
+```
+
+
+Adattáblák
+=====================================     
+
+Row
+-------------------------------------
+
+### Kötvényesítési idõ (teljes)
+
+```{r, results='asis',  echo=FALSE}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_szerz <- read.csv("erk_szerz_full.csv")
+erk_szerz <- erk_szerz[,-c(7,8)]
+erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+knitr::kable(erk_szerz)
+```
+
+### Kötvényesítési idõ (manuális)
+    
+```{r, results='asis',  echo=FALSE}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+erk_szerz <- erk_szerz[,-c(7,8)]
+erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
+                         MEDIÁN = ERK_SZERZ_MEDIAN,
+                         SD = ERK_SZERZ_SD,
+                         MAD = ERK_SZERZ_MAD)
+knitr::kable(erk_szerz)
+```  
+
+Row
+-------------------------------------
+
+### Irat lezárási idõ
+    
+```{r, results='asis',  echo=FALSE}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+erk_lezar_full <- erk_lezar_full[,-c(7,8)]
+erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
+                         MEDIÁN = ERK_LEZAR_MEDIAN,
+                         SD = ERK_LEZAR_SD,
+                         MAD = ERK_LEZAR_MAD)
+knitr::kable(erk_lezar_full)
+```
+
+### Díjkönyvelési idõ
+    
+```{r, results='asis',  echo=FALSE}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- erk_konyv[,-c(7,8)]
+erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
+                         MEDIÁN = ERK_KONYV_MEDIAN,
+                         SD = ERK_KONYV_SD,
+                         MAD = ERK_KONYV_MAD)
+knitr::kable(erk_konyv)
+```  
+
+Kötvényesítési idõ (manuális) trajektória
+=====================================     
+
+Row
+-------------------------------------
+
+### Kötvényesítési idõ (manuális)
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(scales)
+trajectory <- read.csv("trajectory.csv")
+
+       ggplot(trajectory, aes(x=SZERZDAT, group = 1)) +
+         geom_line(aes(y = ERK_SZERZ, colour = "NAPON BELÜL"), size = 1) +
+          geom_line(aes(y = ERK_SZERZ_ROLL, colour = "GÖNGYÖLT"), size = 1) +
+          geom_point(aes(y = ERK_SZERZ, colour = "NAPON BELÜL"), size = 3, shape=15) +
+          geom_point(aes(y = ERK_SZERZ_ROLL, colour = "GÖNGYÖLT"), size = 3, shape=15) +
+          geom_hline(aes(yintercept=5), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,5,label = "Kiváló (5)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=6), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,6,label = "Jó (6)", vjust = 0, hjust = 0), size = 3.5) +
+          geom_hline(aes(yintercept=7), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,7,label = "Átlagos (7)", vjust = 0, hjust = 0), size = 3.5) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 90)) +
+          labs(y = "Kötvényesítési idõ (mnap)",
+          x = "Hónap napja",
+          colour = "Mutató")
+```
+
+### Kötvényesítési idõ (manuális) termékenként
+
+```{r}
+setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
+library(ggplot2)
+library(scales)
+trajectory_term <- read.csv("trajectory_term.csv")
+
+       ggplot(trajectory_term, aes(x=SZERZDAT, group = 1)) +
+         geom_line(aes(y = ERK_SZERZ, colour = "NAPON BELÜL"), size = 1) +
+          geom_line(aes(y = ERK_SZERZ_ROLL, colour = "GÖNGYÖLT"), size = 1) +
+          geom_point(aes(y = ERK_SZERZ, colour = "NAPON BELÜL"), size = 2, shape=15) +
+          geom_point(aes(y = ERK_SZERZ_ROLL, colour = "GÖNGYÖLT"), size = 2, shape=15) +
+          geom_hline(aes(yintercept=5), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,5,label = "Kiváló (5)", vjust = 0, hjust = 0), size = 2.5) +
+          geom_hline(aes(yintercept=6), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,6,label = "Jó (6)", vjust = 0, hjust = 0), size = 2.5) +
+          geom_hline(aes(yintercept=7), colour="#990000", linetype = "dashed") +
+          geom_text(aes(0,7,label = "Átlagos (7)", vjust = 0, hjust = 0), size = 2.5) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 90)) +
+          labs(y = "Kötvényesítési idõ (mnap)",
+          x = "Hónap napja",
+          colour = "Mutató") +
+         theme(legend.position = c(0.9, 0.8)) +
+         facet_grid(.~TERMCSOP)
+```
