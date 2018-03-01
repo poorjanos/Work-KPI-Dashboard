@@ -49,11 +49,13 @@ print(.jcall("java/lang/System", "S", "getProperty", "java.version"))
 # Load RJDBC library
 library(RJDBC)
 
-# Create connection driver and open connection
+# Create connection driver 
 jdbcDriver <-
   JDBC(driverClass = "oracle.jdbc.OracleDriver",
        classPath = "C:\\Users\\PoorJ\\Desktop\\ojdbc7.jar")
 
+
+# Open connection: ablak
 jdbcConnection <-
   dbConnect(
     jdbcDriver,
@@ -63,20 +65,50 @@ jdbcConnection <-
   )
 
 # Read in SQL script from file
-portf <-
-  readQuery(here::here("SQL", "kpi_portf.sql"))
+kpi_al <-
+  readQuery(here::here("SQL", "kpi_al.sql"))
+kpi_pu <-
+  readQuery(here::here("SQL", "kpi_pu.sql"))
 
 # Query on the Oracle instance name
-t_al_curr <- dbGetQuery(jdbcConnection, portf)
+t_al_curr <- dbGetQuery(jdbcConnection, kpi_al)
+t_pu_curr <- dbGetQuery(jdbcConnection, kpi_pu)
 
-# Close connection
+# Close connection: ablak
+dbDisconnect(jdbcConnection)
+
+
+# Open connection: kontakt
+jdbcConnection <-
+  dbConnect(
+    jdbcDriver,
+    url = kontakt$server,
+    user = kontakt$uid,
+    password = kontakt$pwd
+  )
+
+# Read in SQL script from file
+kpi_il <-
+  readQuery(here::here("SQL", "kpi_il.sql"))
+
+# Query on the Oracle instance name
+t_il_curr <- dbGetQuery(jdbcConnection, kpi_il)
+
+# Close connection: kontakt
 dbDisconnect(jdbcConnection)
 
 
 
+#########################################################################################
+# Data Wrangling ########################################################################
+#########################################################################################
+
 # Add to log on local storage then load log
 t_al_log <- write_to_log(t_al_curr, here::here("Data", "al_kpi_log.csv"))
+t_il_log <- write_to_log(t_al_curr, here::here("Data", "il_kpi_log.csv"))
+t_pu_log <- write_to_log(t_al_curr, here::here("Data", "pu_kpi_log.csv"))
 
+# AL segment ----------------------------------------------------------------------------
 # Transform and save to dashboard intput
 if (!is.null(t_al_log)) {
   t_al_log$DATUM <- ymd_hms(t_al_log$DATUM)
@@ -159,56 +191,7 @@ if (!is.null(t_al_log)) {
 
 
   #Kontakt adatok#########################################################################x  
-  # Set JAVA_HOME, set max. memory, and load rJava library
-  Sys.setenv(JAVA_HOME = "C:\\Program Files\\Java\\jre1.8.0_60")
-  options(java.parameters = "-Xmx2g")
-  library(rJava)
   
-  # Output Java version
-  .jinit()
-  print(.jcall("java/lang/System", "S", "getProperty", "java.version"))
-  
-  # Load RJDBC library
-  library(RJDBC)
-  
-  # Create connection driver and open connection
-  jdbcDriver <- JDBC(driverClass = "oracle.jdbc.OracleDriver", classPath = "C:\\Users\\PoorJ\\Desktop\\ojdbc7.jar")
-  jdbcConnection <- dbConnect(jdbcDriver, "jdbc:oracle:thin:@//mmbdb:6678/ikon", "POORJ", "Aegon2021")
-  
-  bsc_kontakt_data_napi <- dbGetQuery(jdbcConnection, 
-                                      "
-                                      select   distinct
-                                      trunc (sysdate - 1, 'ddd') as datum,
-                                      f_ivk,
-                                      f_kpi_kat,
-                                      case
-                                      when irat_tipus in
-                                      ('_AFC_L_Ajánlatkezelés',
-                                      '_AFC_L_Visszaesõ tétel',
-                                      '_AFC_L_Díjkezelés',
-                                      '_AFC_L_Szerzõdéskezelés')
-                                      then
-                                      irat_tipus
-                                      else
-                                      'Egyéb'
-                                      end
-                                      as irat_tipus,
-                                      f_szarm_szerv,
-                                      case when afcerk_lezarva_mn > 15 then 1 else 0 end as nap15,
-                                      afcerk_lezarva_mn as erk_lezar
-                                      from
-                                      t_bsc_irat t1
-                                      where   
-                                      lezarva between trunc (sysdate - 1, 'mm') and trunc (sysdate, 'ddd')
-                                      and lezaro_szervezet = 'AFC'
-                                      and f_alirattipusid not in ('1940', '1941', '1942', '1943') --igényfelmérõ
-                                      and  NOT EXISTS (SELECT 1 FROM kontakt.t_irat_wflog t2 WHERE t2.f_ivk = t1.f_ivk AND t2.f_wfid = 1195)
-                                      and f_irat_tipusid not in (418, 423, 430, 453)
-                                      and afcerk_lezarva_mn <= 100
-                                      ")
-
-  # Close connection
-  dbDisconnect(jdbcConnection)
 
   if (nrow(bsc_kontakt_data_napi)!=0) 
   {
