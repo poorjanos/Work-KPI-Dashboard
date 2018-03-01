@@ -2,6 +2,9 @@
 scriptLog <- file("scriptLog", open="wt")
 sink(scriptLog, type="message")
 
+# Quit if sysdate == weekend
+stopifnot(!(strftime(Sys.Date(),'%u') == 1 | strftime(Sys.Date(),'%u') == 7))
+
 # Load required libs
 library(config)
 library(here)
@@ -11,101 +14,96 @@ library(dplyr)
 library(lubridate)
 library(xlsx)  
 
+# Import helper functions
+source(here::here("R", "data_manipulation.R"))
 
-if (!(strftime(Sys.Date(),'%u') == 1 | strftime(Sys.Date(),'%u') == 7)) {
-  # Define constants
-  # Cons: Kontakt credentials
-  kontakt <-
-    config::get("kontakt",
-                file = "C:\\Users\\PoorJ\\Projects\\config.yml")
-  
-  # Cons: IFI credentials
-  ablak <-
-    config::get("ablak",
-                file = "C:\\Users\\PoorJ\\Projects\\config.yml")
-  
-  # Create dirs (dir.create() does not crash when dir already exists)
-  dir.create(here::here("Data"), showWarnings = FALSE)
-  dir.create(here::here("Reports"), showWarnings = FALSE)
-  dir.create(here::here("SQL"), showWarnings = FALSE)
+# Define constants
+# Cons: Kontakt credentials
+kontakt <-
+  config::get("kontakt",
+              file = "C:\\Users\\PoorJ\\Projects\\config.yml")
 
-  
+# Cons: IFI credentials
+ablak <-
+  config::get("ablak",
+              file = "C:\\Users\\PoorJ\\Projects\\config.yml")
+
+# Create dirs (dir.create() does not crash when dir already exists)
+dir.create(here::here("Data"), showWarnings = FALSE)
+dir.create(here::here("Reports"), showWarnings = FALSE)
+
+
 #########################################################################################
 # Data Extraction #######################################################################
 #########################################################################################
   
-  
-  # Set JAVA_HOME, set max. memory, and load rJava library
-  Sys.setenv(JAVA_HOME="C:\\Program Files\\Java\\jre1.8.0_60")
-  options(java.parameters="-Xmx2g")
-  library(rJava)
-  
-  # Output Java version
-  .jinit()
-  print(.jcall("java/lang/System", "S", "getProperty", "java.version"))
-  
-  # Load RJDBC library
-  library(RJDBC)
-  
-  # Create connection driver and open connection
-  jdbcDriver <-
-    JDBC(driverClass = "oracle.jdbc.OracleDriver",
-         classPath = "C:\\Users\\PoorJ\\Desktop\\ojdbc7.jar")
-  
-  
-  jdbcConnection <-
-    dbConnect(
-      jdbcDriver,
-      url = ablak$server,
-      user = ablak$uid,
-      password = ablak$pwd
-    )
-  
-  
-  # Get SQL scripts
-  readQuery <-
-    function(file)
-      paste(readLines(file, warn = FALSE), collapse = "\n")
-  
-  portf <-
-    readQuery(here::here("SQL", "kpi_portf.sql"))
-  
-  # Query on the Oracle instance name.
-  t_al_curr <- dbGetQuery(jdbcConnection, portf) 
-  
-  # Close connection
-  dbDisconnect(jdbcConnection)
-  
-  
-  # if (nrow(t_al_curr) > 100 && as.Date(max(floor_date(ymd_hms(t_al_curr$SZERZDAT), "day"))) == Sys.Date()-1){ 
-    
-    # If no hist in folder and curr query returs over 100 rows then initialize curr as hist
-    if (!file.exists(here::here("Data", "kpi_prop_log.csv")) &
-        nrow(t_al_curr) > 100) {
-      t_al_hist <- t_al_curr
-      write.csv(t_al_hist, here::here("Data", "kpi_prop_log.csv"))
-      # If hist already in folder then read it and check further
-    } else {
-      t_al_hist <-
-        read.csv(here::here("Data", "kpi_prop_log.csv"), stringsAsFactors = FALSE)
-      max_hist_date <-
-        max(floor_date(ymd_hms(t_al_hist$SZERZDAT), "day"))
-      max_curr_date <- max(floor_date(ymd_hms(t_al_curr$SZERZDAT), "day"))
-      # If start of new month  and curr query returs over 100 rows then re-init curr as hist
-      if (month(max_hist_date) < month(max_curr_date &
-                                       nrow(t_al_curr) > 100)) {
-        t_al_hist <- t_al_curr
-        write.csv(t_al_hist, here::here("Data", "kpi_prop_log.csv"))
-        # If within same month and curr query returs over 100 rows then append curr to hist
-      } else if (nrow(t_al_curr) > 100) {
-        t_al_hist <- rbind(t_al_hist, t_al_curr)
-        write.csv(t_al_hist, here::here("Data", "kpi_prop_log.csv"))
-      }
-    }
+# Set JAVA_HOME, set max. memory, and load rJava library
+Sys.setenv(JAVA_HOME="C:\\Program Files\\Java\\jre1.8.0_60")
+options(java.parameters="-Xmx2g")
+library(rJava)
 
-    # Check if history exists
-    exists('t_al_hist') && is.data.frame(base::get('t_al_hist'))
-    
+# Output Java version
+.jinit()
+print(.jcall("java/lang/System", "S", "getProperty", "java.version"))
+
+# Load RJDBC library
+library(RJDBC)
+
+# Create connection driver and open connection
+jdbcDriver <-
+  JDBC(driverClass = "oracle.jdbc.OracleDriver",
+       classPath = "C:\\Users\\PoorJ\\Desktop\\ojdbc7.jar")
+
+
+jdbcConnection <-
+  dbConnect(
+    jdbcDriver,
+    url = ablak$server,
+    user = ablak$uid,
+    password = ablak$pwd
+  )
+
+
+
+portf <-
+  readQuery(here::here("SQL", "kpi_portf.sql"))
+
+# Query on the Oracle instance name.
+t_al_curr <- dbGetQuery(jdbcConnection, portf) 
+
+# Close connection
+dbDisconnect(jdbcConnection)
+
+
+# if (nrow(t_al_curr) > 100 && as.Date(max(floor_date(ymd_hms(t_al_curr$SZERZDAT), "day"))) == Sys.Date()-1){ 
+  
+  # Initialize curr as hist if folder empty
+  if (!file.exists(here::here("Data", "kpi_prop_log.csv")) &
+      nrow(t_al_curr) > 100) {
+    t_al_hist <- t_al_curr
+    write.csv(t_al_hist, here::here("Data", "kpi_prop_log.csv"), row.names = FALSE)
+    # Check further if folder not empty
+  } else {
+    t_al_hist <-
+      read.csv(here::here("Data", "kpi_prop_log.csv"), stringsAsFactors = FALSE)
+    max_hist_date <-
+      max(floor_date(ymd_hms(t_al_hist$SZERZDAT), "day"))
+    max_curr_date <- max(floor_date(ymd_hms(t_al_curr$SZERZDAT), "day"))
+    # Re-init curr as hist if newmonth starts
+    if (month(max_hist_date) < month(max_curr_date) &
+                                     nrow(t_al_curr) > 100) {
+      t_al_hist <- t_al_curr
+      write.csv(t_al_hist, here::here("Data", "kpi_prop_log.csv"), row.names = FALSE)
+    # Append curr to hist if within month
+    } else if (max_curr_date > max_hist_date & nrow(t_al_curr) > 100) {
+      t_al_hist <- rbind(t_al_hist, t_al_curr)
+      write.csv(t_al_hist, here::here("Data", "kpi_prop_log.csv"), row.names = FALSE)
+    }
+  }
+
+  # Check if history exists
+  exists('t_al_hist') && is.data.frame(base::get('t_al_hist'))
+  
 #----------------------------------------------------------------------------------------------------------
       
       if (sum(hits)==0) {
@@ -654,4 +652,3 @@ if (!(strftime(Sys.Date(),'%u') == 1 | strftime(Sys.Date(),'%u') == 7)) {
   # Copy to public folder
   file.copy("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor/BSC_dashboard.html", "C:/Users/PoorJ/Desktop/Mischung/R/AFC_publish", overwrite = T)
   
-}
