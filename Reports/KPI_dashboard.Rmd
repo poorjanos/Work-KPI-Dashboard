@@ -15,29 +15,39 @@ Row
 ### Érkezéstõl menesztésig átlag (teljes)
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_szerz <- read.csv("erk_szerz_full.csv")
-erk_szerz <- erk_szerz[,-c(7,8)]
-erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
-                         MEDIÁN = ERK_SZERZ_MEDIAN,
-                         SD = ERK_SZERZ_SD,
-                         MAD = ERK_SZERZ_MAD)
+library(here)
+erk_szerz <- read.csv(here::here("Data", "erk_szerz_full.csv"))
+erk_szerz <- erk_szerz[, -c(7, 8)]
+
+erk_szerz <- dplyr::rename(
+erk_szerz,
+ÁTLAG = ERK_SZERZ_ATLAG,
+MEDIÁN = ERK_SZERZ_MEDIAN,
+SD = ERK_SZERZ_SD,
+MAD = ERK_SZERZ_MAD
+)
+
 erk_szerz <- dplyr::slice(erk_szerz, length(DATUM))
 
-flexdashboard::valueBox(erk_szerz$ÁTLAG, icon = ifelse(erk_szerz$ÁTLAG > 5.51, "fa-thumbs-o-down", "fa-thumbs-o-up"),
-                        color = ifelse(erk_szerz$ÁTLAG > 5.51, "warning", "primary"))
+flexdashboard::valueBox(
+erk_szerz$ÁTLAG,
+icon = ifelse(erk_szerz$ÁTLAG > 5.51, "fa-thumbs-o-down", "fa-thumbs-o-up"),
+color = ifelse(erk_szerz$ÁTLAG > 5.51, "warning", "primary")
+)
 ```
 
 ###  Érkezéstõl menesztésig medián (teljes)
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_szerz <- read.csv("erk_szerz_full.csv")
-erk_szerz <- erk_szerz[,-c(7,8)]
-erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
-                         MEDIÁN = ERK_SZERZ_MEDIAN,
-                         SD = ERK_SZERZ_SD,
-                         MAD = ERK_SZERZ_MAD)
+erk_szerz <- read.csv(here::here("Data", "erk_szerz_full.csv"))
+erk_szerz <- erk_szerz[, -c(7, 8)]
+erk_szerz <- dplyr::rename(
+erk_szerz,
+ÁTLAG = ERK_SZERZ_ATLAG,
+MEDIÁN = ERK_SZERZ_MEDIAN,
+SD = ERK_SZERZ_SD,
+MAD = ERK_SZERZ_MAD
+)
 erk_szerz <- dplyr::slice(erk_szerz, length(DATUM))
 
 flexdashboard::valueBox(erk_szerz$MEDIÁN, icon =  "fa-balance-scale")
@@ -46,13 +56,15 @@ flexdashboard::valueBox(erk_szerz$MEDIÁN, icon =  "fa-balance-scale")
 ### Darabszám (teljes)
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_szerz <- read.csv("erk_szerz_full.csv")
-erk_szerz <- erk_szerz[,-c(7,8)]
-erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
-                         MEDIÁN = ERK_SZERZ_MEDIAN,
-                         SD = ERK_SZERZ_SD,
-                         MAD = ERK_SZERZ_MAD)
+erk_szerz <- read.csv(here::here("Data", "erk_szerz_full.csv"))
+erk_szerz <- erk_szerz[, -c(7, 8)]
+erk_szerz <- dplyr::rename(
+erk_szerz,
+ÁTLAG = ERK_SZERZ_ATLAG,
+MEDIÁN = ERK_SZERZ_MEDIAN,
+SD = ERK_SZERZ_SD,
+MAD = ERK_SZERZ_MAD
+)
 erk_szerz <- dplyr::slice(erk_szerz, length(DATUM))
 
 flexdashboard::valueBox(erk_szerz$DARAB, icon = "fa-signal")
@@ -63,10 +75,9 @@ Row
    
 ### Kötvényesítési idõ (automatikus és manuális)
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 
-erk_szerz <- read.csv("erk_szerz_full.csv")
+erk_szerz <- read.csv(here::here("Data", "erk_szerz_full.csv"))
 erk_szerz <- erk_szerz[erk_szerz$DARAB > 1, ]
 erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
                          MEDIÁN = ERK_SZERZ_MEDIAN,
@@ -94,10 +105,9 @@ ggplot(erk_szerz, aes(x=DATUM, group = 1)) +
 
 ### Kötvényesítési idõ (automatikus és manuális) termékenként
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(dplyr)
-erk_szerz_term <- read.csv("erk_szerz_term_full.csv")
+erk_szerz_term <- read.csv(here::here("Data", "erk_szerz_term_full.csv"))
 erk_szerz_term <- dplyr::rename(erk_szerz_term, ÁTLAG = ERK_SZERZ_ATLAG,
                          MEDIÁN = ERK_SZERZ_MEDIAN,
                          SD = ERK_SZERZ_SD,
@@ -134,8 +144,7 @@ Row
 ### Érkezéstõl menesztésig átlag (manuális)
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-afc_erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+afc_erk_szerz <- read.csv(here::here("Data", "afc_erk_szerz_full.csv"))
 afc_erk_szerz <- afc_erk_szerz[,-c(7,8)]
 afc_erk_szerz <- dplyr::rename(afc_erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
                          MEDIÁN = ERK_SZERZ_MEDIAN,
@@ -150,8 +159,7 @@ flexdashboard::valueBox(afc_erk_szerz$ÁTLAG, icon = ifelse(afc_erk_szerz$ÁTLAG >
 ### Érkezéstõl menesztésig medián (manuális)
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-afc_erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+afc_erk_szerz <- read.csv(here::here("Data", "afc_erk_szerz_full.csv"))
 afc_erk_szerz <- afc_erk_szerz[,-c(7,8)]
 afc_erk_szerz <- dplyr::rename(afc_erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
                          MEDIÁN = ERK_SZERZ_MEDIAN,
@@ -165,8 +173,7 @@ flexdashboard::valueBox(afc_erk_szerz$MEDIÁN, icon = "fa-balance-scale")
 ### Darabszám
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-afc_erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+afc_erk_szerz <- read.csv(here::here("Data", "afc_erk_szerz_full.csv"))
 afc_erk_szerz <- afc_erk_szerz[,-c(7,8)]
 afc_erk_szerz <- dplyr::rename(afc_erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
                          MEDIÁN = ERK_SZERZ_MEDIAN,
@@ -183,9 +190,8 @@ Row
 ### Érkezéstõl menesztésig (manuális)
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
-erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+erk_szerz <- read.csv(here::here("Data", "afc_erk_szerz_full.csv"))
 erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
                          MEDIÁN = ERK_SZERZ_MEDIAN,
                          SD = ERK_SZERZ_SD,
@@ -212,10 +218,9 @@ ggplot(erk_szerz, aes(x=DATUM, group = 1)) +
 ### Érkezéstõl menesztésig termékenként (manuális)
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(dplyr)
-erk_szerz_term <- read.csv("afc_erk_szerz_term.csv")
+erk_szerz_term <- read.csv(here::here("Data", "afc_erk_szerz_term.csv"))
 erk_szerz_term <- dplyr::rename(erk_szerz_term, ÁTLAG = ERK_SZERZ_ATLAG,
                          MEDIÁN = ERK_SZERZ_MEDIAN,
                          SD = ERK_SZERZ_SD,
@@ -252,8 +257,7 @@ Row
 ### Érkezéstõl lezárásig átlag
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+erk_lezar_full <- read.csv(here::here("Data", "kontakt_erk_lezar_full.csv"))
 erk_lezar_full <- erk_lezar_full[,-c(7,8)]
 erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
                          MEDIÁN = ERK_LEZAR_MEDIAN,
@@ -268,8 +272,7 @@ flexdashboard::valueBox(erk_lezar_full$ÁTLAG, icon = ifelse(erk_lezar_full$ÁTLAG
 ### Érkezéstõl lezárásig medián
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+erk_lezar_full <- read.csv(here::here("Data", "kontakt_erk_lezar_full.csv"))
 erk_lezar_full <- erk_lezar_full[,-c(7,8)]
 erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
                          MEDIÁN = ERK_LEZAR_MEDIAN,
@@ -283,8 +286,7 @@ flexdashboard::valueBox(erk_lezar_full$MEDIÁN, icon = "fa-balance-scale")
 ### Darabszám
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+erk_lezar_full <- read.csv(here::here("Data", "kontakt_erk_lezar_full.csv"))
 erk_lezar_full <- erk_lezar_full[,-c(7,8)]
 erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
                          MEDIÁN = ERK_LEZAR_MEDIAN,
@@ -299,8 +301,7 @@ Row
    
 ### Érkezéstõl lezárásig
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+erk_lezar_full <- read.csv(here::here("Data", "kontakt_erk_lezar_full.csv"))
 library(ggplot2)
 erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
                          MEDIÁN = ERK_LEZAR_MEDIAN,
@@ -327,10 +328,9 @@ ggplot(erk_lezar_full, aes(x=DATUM, group = 1)) +
 
 ### Érkezéstõl lezárásig típusonként
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(dplyr)
-erk_lezar_irattip <- read.csv("kontakt_erk_lezar_irattip.csv")
+erk_lezar_irattip <- read.csv(here::here("Data", "kontakt_erk_lezar_irattip.csv"))
 erk_lezar_irattip <- dplyr::rename(erk_lezar_irattip, ÁTLAG = ERK_LEZAR_ATLAG,
                          MEDIÁN = ERK_LEZAR_MEDIAN,
                          SD = ERK_LEZAR_SD,
@@ -370,8 +370,7 @@ Row
 ### Érkezéstõl könyvelésig átlag
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- read.csv(here::here("Data", "pu_erk_konyv_full.csv"))
 erk_konyv <- erk_konyv[,-c(7,8)]
 erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
                          MEDIÁN = ERK_KONYV_MEDIAN,
@@ -386,8 +385,7 @@ flexdashboard::valueBox(erk_konyv$ÁTLAG, icon = ifelse(erk_konyv$ÁTLAG > 4.51, "
 ### Érkezéstõl könyvelésig medián
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- read.csv(here::here("Data", "pu_erk_konyv_full.csv"))
 erk_konyv <- erk_konyv[,-c(7,8)]
 erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
                          MEDIÁN = ERK_KONYV_MEDIAN,
@@ -401,8 +399,7 @@ flexdashboard::valueBox(erk_konyv$MEDIÁN, icon = "fa-balance-scale")
 ### Darabszám
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- read.csv(here::here("Data", "pu_erk_konyv_full.csv"))
 erk_konyv <- erk_konyv[,-c(7,8)]
 erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
                          MEDIÁN = ERK_KONYV_MEDIAN,
@@ -418,9 +415,8 @@ Row
    
 ### Érkezéstõl könyvelésig
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
-erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- read.csv(here::here("Data", "pu_erk_konyv_full.csv"))
 erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
                          MEDIÁN = ERK_KONYV_MEDIAN,
                          SD = ERK_KONYV_SD,
@@ -446,10 +442,9 @@ ggplot(erk_konyv, aes(x=DATUM, group = 1)) +
 ### Érkezéstõl könyvelésig típusonként
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(dplyr)
-erk_konyv_tip <- read.csv("pu_erk_konyv_tipus.csv")
+erk_konyv_tip <- read.csv(here::here("Data", "pu_erk_konyv_tipus.csv"))
 erk_konyv_tip <- dplyr::rename(erk_konyv_tip, ÁTLAG = ERK_KONYV_ATLAG,
                          MEDIÁN = ERK_KONYV_MEDIAN,
                          SD = ERK_KONYV_SD,
@@ -487,8 +482,7 @@ Row
 ### Kötvényesítés (manuális) 15 napon túl
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-afc15 <- read.csv("afc15.csv")
+afc15 <- read.csv(here::here("Data", "afc15.csv"))
 afc15 <- dplyr::slice(afc15, length(DATUM))
 afc15$NAGYOBB_15_NAP <- round(afc15$NAGYOBB_15_NAP*100, 2)
 
@@ -499,8 +493,7 @@ flexdashboard::valueBox(afc15$NAGYOBB_15_NAP, icon = ifelse(afc15$NAGYOBB_15_NAP
 ### Iratkezelés 15 napon túl
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-irat15 <-read.csv("irat15.csv")
+irat15 <-read.csv(here::here("Data", "irat15.csv"))
 irat15 <- dplyr::slice(irat15, length(DATUM))
 irat15$NAGYOBB_15_NAP <- round(irat15$NAGYOBB_15_NAP*100, 2)
 
@@ -515,10 +508,9 @@ Row {.tabset .tabset-fade}
 ### Kötvényesítés (manuális) 15 napon túl
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(scales)
-afc15 <- read.csv("afc15.csv")
+afc15 <- read.csv(here::here("Data", "afc15.csv"))
 
 ggplot(afc15, aes(x=DATUM, group = 1)) +
           geom_line(aes(y = NAGYOBB_15_NAP), size = 1, colour = "#00BFC4") +
@@ -538,10 +530,9 @@ ggplot(afc15, aes(x=DATUM, group = 1)) +
 ### Kötvényesítés (manuális) 15 napon túl termékenként
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(scales)
-afc15_term <- read.csv("afc15_term.csv")
+afc15_term <- read.csv(here::here("Data", "afc15_term.csv"))
 
         ggplot(afc15_term, aes(x=DATUM, group = 1)) +
           geom_line(aes(y = NAGYOBB_15_NAP), size = 1, colour = "#00BFC4") +
@@ -563,10 +554,9 @@ afc15_term <- read.csv("afc15_term.csv")
 ### Irat lezárási idõ 15 napon túl
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(scales)
-irat15 <- read.csv("irat15.csv")
+irat15 <- read.csv(here::here("Data", "irat15.csv"))
 
 ggplot(irat15, aes(x=DATUM, group=1)) +
       geom_line(aes(y = NAGYOBB_15_NAP), size = 1, colour = "#00BFC4") +
@@ -586,10 +576,9 @@ ggplot(irat15, aes(x=DATUM, group=1)) +
 ### Irat lezárási idõ 15 napon túl típusonként
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(scales)
-irat15_irattip <- read.csv("irat15_irattip.csv")
+irat15_irattip <- read.csv(here::here("Data", "irat15_irattip.csv"))
 
       ggplot(irat15_irattip, aes(x=DATUM, group =1)) +
       geom_line(aes(y = NAGYOBB_15_NAP), size = 1, colour = "#00BFC4") +
@@ -618,8 +607,7 @@ Row
 ### Kötvényesítési idõ (teljes)
 
 ```{r, results='asis',  echo=FALSE}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_szerz <- read.csv("erk_szerz_full.csv")
+erk_szerz <- read.csv(here::here("Data", "erk_szerz_full.csv"))
 erk_szerz <- erk_szerz[,-c(7,8)]
 erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
                          MEDIÁN = ERK_SZERZ_MEDIAN,
@@ -631,8 +619,7 @@ knitr::kable(erk_szerz)
 ### Kötvényesítési idõ (manuális)
     
 ```{r, results='asis',  echo=FALSE}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_szerz <- read.csv("afc_erk_szerz_full.csv")
+erk_szerz <- read.csv(here::here("Data", "afc_erk_szerz_full.csv"))
 erk_szerz <- erk_szerz[,-c(7,8)]
 erk_szerz <- dplyr::rename(erk_szerz, ÁTLAG = ERK_SZERZ_ATLAG,
                          MEDIÁN = ERK_SZERZ_MEDIAN,
@@ -647,8 +634,7 @@ Row
 ### Irat lezárási idõ
     
 ```{r, results='asis',  echo=FALSE}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-erk_lezar_full <- read.csv("kontakt_erk_lezar_full.csv")
+erk_lezar_full <- read.csv(here::here("Data", "kontakt_erk_lezar_full.csv"))
 erk_lezar_full <- erk_lezar_full[,-c(7,8)]
 erk_lezar_full <- dplyr::rename(erk_lezar_full, ÁTLAG = ERK_LEZAR_ATLAG,
                          MEDIÁN = ERK_LEZAR_MEDIAN,
@@ -660,9 +646,7 @@ knitr::kable(erk_lezar_full)
 ### Díjkönyvelési idõ
     
 ```{r, results='asis',  echo=FALSE}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
-library(ggplot2)
-erk_konyv <- read.csv("pu_erk_konyv_full.csv")
+erk_konyv <- read.csv(here::here("Data", "pu_erk_konyv_full.csv"))
 erk_konyv <- erk_konyv[,-c(7,8)]
 erk_konyv <- dplyr::rename(erk_konyv, ÁTLAG = ERK_KONYV_ATLAG,
                          MEDIÁN = ERK_KONYV_MEDIAN,
@@ -680,10 +664,9 @@ Row
 ### Kötvényesítési idõ (manuális)
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(scales)
-trajectory <- read.csv("trajectory.csv")
+trajectory <- read.csv(here::here("Data", "trajectory.csv"))
 
        ggplot(trajectory, aes(x=SZERZDAT, group = 1)) +
          geom_line(aes(y = ERK_SZERZ, colour = "NAPON BELÜL"), size = 1) +
@@ -706,10 +689,9 @@ trajectory <- read.csv("trajectory.csv")
 ### Kötvényesítési idõ (manuális) termékenként
 
 ```{r}
-setwd("C:/Users/PoorJ/Desktop/Mischung/R/BSC monitor")
 library(ggplot2)
 library(scales)
-trajectory_term <- read.csv("trajectory_term.csv")
+trajectory_term <- read.csv(here::here("Data", "trajectory_term.csv"))
 
        ggplot(trajectory_term, aes(x=SZERZDAT, group = 1)) +
          geom_line(aes(y = ERK_SZERZ, colour = "NAPON BELÜL"), size = 1) +
