@@ -16,7 +16,8 @@ SELECT   DISTINCT
             AS irat_tipus,
          f_szarm_szerv,
          CASE WHEN afcerk_lezarva_mn > 15 THEN 1 ELSE 0 END AS nap15,
-         afcerk_lezarva_mn AS erk_lezar
+         afcerk_lezarva_mn AS erk_lezar,
+         lezarva
   FROM   t_bsc_irat t1
  WHERE   lezarva BETWEEN TRUNC (SYSDATE - 1, 'mm') AND TRUNC (SYSDATE, 'ddd')
          AND lezaro_szervezet = 'AFC'
