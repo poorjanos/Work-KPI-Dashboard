@@ -104,9 +104,9 @@ dbDisconnect(jdbcConnection)
 #########################################################################################
 
 # Init or append to log on local storage then load log
-t_al_log <- write_to_log(t_al_curr, here::here("Data", "al_kpi_log.csv"))
-t_il_log <- write_to_log(t_il_curr, here::here("Data", "il_kpi_log.csv"))
-t_pu_log <- write_to_log(t_pu_curr, here::here("Data", "pu_kpi_log.csv"))
+t_al_log <- write_to_log(t_al_curr, here::here("Data", "al_kpi_log.csv"), "SZERZDAT")
+t_il_log <- write_to_log(t_il_curr, here::here("Data", "il_kpi_log.csv"), "LEZARVA")
+t_pu_log <- write_to_log(t_pu_curr, here::here("Data", "pu_kpi_log.csv"), "KONYVDAT")
 
 # AL segment ----------------------------------------------------------------------------
 # Transform and save to dashboard intput

@@ -5,7 +5,7 @@ readQuery <-
 
 
 # Function to write daily query results to log on local storage
-write_to_log <- function(df_curr, path_to_log) {
+write_to_log <- function(df_curr, path_to_log, date_to_check) {
   # Initialize curr as hist if folder empty and enough data in curr
   if (!file.exists(path_to_log) & nrow(df_curr) > 100) {
     df_hist <- df_curr
@@ -14,14 +14,14 @@ write_to_log <- function(df_curr, path_to_log) {
     # Exit if folder empty but not enough data in curr
   } else if (!file.exists(path_to_log) & nrow(df_curr) < 100) {
     return()
-    # Check further if folder not empty
+    # Check max record dates if folder not empty
   } else {
     df_hist <-
       read.csv(path_to_log, stringsAsFactors = FALSE)
     max_hist_date <-
-      max(floor_date(ymd_hms(df_hist$SZERZDAT), "day"))
+      max(floor_date(ymd_hms(df_hist[[date_to_check]]), "day"))
     max_curr_date <-
-      max(floor_date(ymd_hms(df_curr$SZERZDAT), "day"))
+      max(floor_date(ymd_hms(df_curr[[date_to_check]]), "day"))
     # Re-init curr as hist if newmonth starts
     if (month(max_hist_date) < month(max_curr_date) &
         nrow(df_curr) > 100) {
