@@ -38,4 +38,5 @@ SELECT   TRUNC (SYSDATE, 'ddd') - 1 AS datum,
   FROM   t_bsc_kontroll a
  WHERE       szerzdat IS NOT NULL
          AND TRUNC (szerzdat, 'mm') = TRUNC (SYSDATE - 1, 'mm')
+         AND TRUNC(szerzdat, 'ddd') <> TRUNC (SYSDATE, 'ddd')
          AND erkdat - alirdat < 90
