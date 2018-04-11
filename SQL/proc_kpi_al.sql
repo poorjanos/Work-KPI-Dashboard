@@ -63,7 +63,8 @@ BEGIN                                                                  --ABLAK
                            '7T',
                            '7S',
                            '7E',
-                           '7A')                   --7t, 7s = elektrás tételek
+                           '7A',
+			   'F4')                   --7t, 7s = elektrás tételek
       GROUP BY   f_vonalkod
         HAVING   MIN (f_datum) BETWEEN TRUNC (SYSDATE - 1, 'mm')
                                    AND  TRUNC (SYSDATE, 'ddd');
@@ -269,7 +270,8 @@ BEGIN                                                                  --ABLAK
                                                      '7S',
                                                      '7E',
                                                      '7A',
-                                                     'M3')
+                                                     'M3',
+						     'F4')
                                               AND f_vonalkod = a.vonalkod
                                    GROUP BY   f_vonalkod)
                          AND b.f_esemeny IN
@@ -286,7 +288,8 @@ BEGIN                                                                  --ABLAK
                                    '7S',
                                    '7E',
                                    '7A',
-                                   'M3')
+                                   'M3',
+				   'F4')
                          AND b.f_vonalkod = a.vonalkod);
 
 
