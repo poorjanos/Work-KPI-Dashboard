@@ -432,15 +432,15 @@ BEGIN                                                                  --ABLAK
    EXECUTE IMMEDIATE 'TRUNCATE TABLE t_bsc_fufi';
 
 
-   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM fpack FOR pack@dijtart_exdbp_f400';
+   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM fpack FOR pack@dl_exdb_pre2';
 
-   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM fproposal FOR proposal@dijtart_exdbp_f400';
+   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM fproposal FOR proposal@dl_exdb_pre2';
 
-   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM facquisitor FOR acquisitor@dijtart_exdbp_f400';
+   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM facquisitor FOR acquisitor@dl_exdb_pre2';
 
-   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM fproposal_error_log FOR proposal_error_log@dijtart_exdbp_f400';
+   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM fproposal_error_log FOR proposal_error_log@dl_exdb_pre2';
 
-   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM fproposal_letter FOR proposal_letter@dijtart_exdbp_f400';
+   EXECUTE IMMEDIATE 'CREATE OR REPLACE SYNONYM fproposal_letter FOR proposal_letter@dl_exdb_pre2';
 
    COMMIT;
 

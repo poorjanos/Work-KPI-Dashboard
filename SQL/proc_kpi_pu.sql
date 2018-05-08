@@ -5,21 +5,21 @@ BEGIN
    COMMIT;
 
  EXECUTE IMMEDIATE
-         'CREATE OR REPLACE SYNONYM fmoney_in_application FOR money_in_application@dijtart_exdbp_f400';
+         'CREATE OR REPLACE SYNONYM fmoney_in_application FOR money_in_application@dl_exdb_pre2';
           COMMIT;
    
       EXECUTE IMMEDIATE
-         'CREATE OR REPLACE SYNONYM fmoney_in FOR money_in@dijtart_exdbp_f400';
+         'CREATE OR REPLACE SYNONYM fmoney_in FOR money_in@dl_exdb_pre2';
           COMMIT;
 
     EXECUTE IMMEDIATE
-         'CREATE OR REPLACE SYNONYM fpack FOR pack@dijtart_exdbp_f400';
+         'CREATE OR REPLACE SYNONYM fpack FOR pack@dl_exdb_pre2';
    
       EXECUTE IMMEDIATE
-         'CREATE OR REPLACE SYNONYM fproposal FOR proposal@dijtart_exdbp_f400';
+         'CREATE OR REPLACE SYNONYM fproposal FOR proposal@dl_exdb_pre2';
          
     EXECUTE IMMEDIATE
-         'CREATE OR REPLACE SYNONYM fcontract_idntfr FOR contract_idntfr@dijtart_exdbp_f400';
+         'CREATE OR REPLACE SYNONYM fcontract_idntfr FOR contract_idntfr@dl_exdb_pre2';
 
 
 
