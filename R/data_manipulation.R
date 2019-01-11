@@ -23,8 +23,8 @@ write_to_log <- function(df_curr, path_to_log, date_to_check) {
     max_curr_date <-
       max(floor_date(ymd_hms(df_curr[[date_to_check]]), "day"))
     # Re-init curr as hist if newmonth starts
-    if (month(max_hist_date) < month(max_curr_date) &
-        nrow(df_curr) > 100) {
+    if ((month(max_hist_date) < month(max_curr_date) | year(max_hist_date) < year(max_curr_date))
+        & nrow(df_curr) > 100) {
       df_hist <- df_curr
       write.csv(df_hist, path_to_log, row.names = FALSE)
       return(df_hist)
